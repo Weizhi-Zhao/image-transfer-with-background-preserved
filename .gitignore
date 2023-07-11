@@ -46,7 +46,6 @@ package-lock.json
 datasets/
 logs/
 *.h5
-results/
 temp/
 test/
 __pycache__/
