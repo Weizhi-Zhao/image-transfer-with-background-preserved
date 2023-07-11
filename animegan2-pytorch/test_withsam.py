@@ -1,25 +1,23 @@
 import os
 import argparse
-
 from PIL import Image
 import numpy as np
-
 import torch
 from torchvision.transforms.functional import to_tensor, to_pil_image
-
 from model import Generator
-
-
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import cv2
-
 from segment_anything import sam_model_registry, SamPredictor
 
 torch.backends.cudnn.enabled = False
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
+
+IMAGE_PATH = "samples/inputs/shield.jpg"
+sam_checkpoint = "sam_vit_l_0b3195.pth"
+model_type = "vit_l"
 
 
 def load_image(image_path, x32=False):
@@ -44,27 +42,14 @@ def test(args, image):
     
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # for image_name in sorted(os.listdir(args.input_dir)):
-    #     if os.path.splitext(image_name)[-1].lower() not in [".jpg", ".png", ".bmp", ".tiff"]:
-    #         continue
-            
-    # image = load_image(os.path.join(args.input_dir, 'shield.jpg'), args.x32)
-
     with torch.no_grad():
         image = to_tensor(image).unsqueeze(0) * 2 - 1
         out = net(image.to(device), args.upsample_align).cpu()
         out = out.squeeze(0).clip(-1, 1) * 0.5 + 0.5
         out = to_pil_image(out)
 
-    out.save(os.path.join(args.output_dir, 'shield.jpg'))
-    print("image saved: 'shield.jpg'")
-
-
-# if __name__ == '__main__':
-
-    
-
-
+    out.save(os.path.join(args.output_dir, IMAGE_PATH.split("/")[-1]))
+    return out
 
 def show_mask(mask, ax, random_color=False):
     if random_color:
@@ -86,20 +71,13 @@ def show_box(box, ax):
     w, h = box[2] - box[0], box[3] - box[1]
     ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2))   
 
-# image = cv2.imread('images/shield.jpg')
-image = cv2.imread('./samples/inputs/shield.jpg')
+image = cv2.imread(IMAGE_PATH)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 plt.figure(figsize=(10,10))
 plt.imshow(image)
 plt.axis('on')
 plt.show()
-
-
-
-
-sam_checkpoint = "sam_vit_l_0b3195.pth"
-model_type = "vit_l"
 
 device = "cpu"
 
@@ -132,48 +110,21 @@ plt.show()
 mask = mask.astype(np.uint8)
 mask[mask==1] = 255
 
-# import pdb; pdb.set_trace()
-
 import cv2
-# 导入OpenCV库
 
-img = cv2.imread('./samples/inputs/shield.jpg')
-# img2 = cv2.imread('./imgs/img2.jpg')
-# 使用cv2.imread()函数读取两张图片
-
-# img1 = cv2.resize(img1, (1300, 700))
-# img2 = cv2.resize(img2, (1300, 700))
-# 使用cv2.resize()函数将两张图片调整为相同大小
+img = cv2.imread(IMAGE_PATH)
 
 img1gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-# 将第一张图片转换为灰度图像，使用cv2.cvtColor()函数，其中cv2.COLOR_BGR2GRAY表示将BGR图像转换为灰度图像
-
-# ret, mask = cv2.threshold(img1gray, 10, 255, cv2.THRESH_BINARY)
-# 使用cv2.threshold()函数对灰度图像进行阈值处理，得到二值化的掩膜图像，ret为阈值，mask为二值化图像
-
-# import pdb; pdb.set_trace()
 
 mask_inv = cv2.bitwise_not(mask)
-# 对掩膜图像进行反转，使用cv2.bitwise_not()函数
 
 img_fg = cv2.bitwise_and(img, img, mask=mask)
-# 对第一张图片和掩膜图像进行按位与操作，获取第一张图片中与掩膜为白色部分相交的部分，使用cv2.bitwise_and()函数
-
-# img2_fg = cv2.bitwise_and(img2, img2, mask=mask_inv)
-# 对第二张图片和反转后的掩膜图像进行按位与操作，获取第二张图片中与反转后的掩膜为白色部分相交的部分
-
-# res = cv2.add(img1_bg, img2_fg)
-# 将第一张图片中与掩膜为白色部分相交的部分与第二张图片中与反转后的掩膜为白色部分相交的部分进行相加，得到最终结果
 
 cv2.imshow('sam result', img_fg)
-# 使用cv2.imshow()函数显示结果图像，窗口名称为'result'
 
 cv2.waitKey(0)
-# 等待按下任意按键
 
 cv2.destroyAllWindows()
-# 销毁所有创建的窗口
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -209,17 +160,11 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-test(args, img_fg)
-# test(args, img)
-
-img_fga = cv2.imread('./samples/results/shield.jpg')
-# cv2.imshow('lalala', img_fga)
+img_fga = test(args, image)
+img_fga = cv2.cvtColor(np.asarray(img_fga),cv2.COLOR_RGB2BGR) 
 img_fga = cv2.bitwise_and(img_fga, img_fga, mask=mask)
-# cv2.imshow('lalala1', img_fga)
-
 
 img_bg = cv2.bitwise_and(img, img, mask=mask_inv)
-# cv2.imshow('lalala2', img_bg)
 
 res = cv2.add(img_fga, img_bg)
 
