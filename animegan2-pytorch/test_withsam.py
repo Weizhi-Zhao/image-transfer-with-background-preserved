@@ -88,9 +88,9 @@ predictor = SamPredictor(sam)
 
 predictor.set_image(image)
 
-# input_point = np.array([[1260, 600]])
+input_point = np.array([[1260, 600]])
 # input_point = np.array([[960, 600]])
-input_point = np.array([[660, 600]])
+# input_point = np.array([[660, 600]])
 input_label = np.array([1])
 
 masks, scores, logits = predictor.predict(
@@ -169,6 +169,8 @@ img_bg = cv2.bitwise_and(img, img, mask=mask_inv)
 res = cv2.add(img_fga, img_bg)
 
 cv2.imshow('result', res)
+
+cv2.imwrite("samples/results/" + IMAGE_PATH.split("/")[-1], res)
 
 cv2.waitKey(0)
 
