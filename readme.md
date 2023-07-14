@@ -13,3 +13,8 @@
 
 ![原图](/animegan2-pytorch/samples/results/拼图.jpg "原图")
 
+# flask使用方法
+
+1. 进入flask-test文件夹
+2. 运行`python test.py`
+3. 将终端中的网址打开，即可看到网页"hello, world!"
