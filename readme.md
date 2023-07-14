@@ -34,3 +34,12 @@
 5. 等待**两分钟**
 6. 网页输出风格迁移图片
 > 注意，sam的prompt还不能在网页中修改，需要到代码里修改提示点的位置才能分割不同位置的物体
+
+网站效果
+![网站](flask-test/demo/proc1.png)
+
+原图
+![原图](flask-test/demo/jms.jpg)
+
+网站生成图片
+![网站生成](flask-test/demo/proc2.png)
