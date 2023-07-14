@@ -11,14 +11,6 @@ import matplotlib.pyplot as plt
 import cv2
 from segment_anything import sam_model_registry, SamPredictor
 
-torch.backends.cudnn.enabled = False
-torch.backends.cudnn.benchmark = False
-torch.backends.cudnn.deterministic = True
-
-IMAGE_PATH = "samples/inputs/shield.jpg"
-sam_checkpoint = "sam_vit_l_0b3195.pth"
-model_type = "vit_l"
-
 
 def load_image(image_path, x32=False):
     img = Image.open(image_path).convert("RGB")
@@ -48,7 +40,7 @@ def test(args, image):
         out = out.squeeze(0).clip(-1, 1) * 0.5 + 0.5
         out = to_pil_image(out)
 
-    out.save(os.path.join(args.output_dir, IMAGE_PATH.split("/")[-1]))
+    # out.save(os.path.join(args.output_dir, IMAGE_PATH.split("/")[-1]))
     return out
 
 def show_mask(mask, ax, random_color=False):
@@ -71,107 +63,112 @@ def show_box(box, ax):
     w, h = box[2] - box[0], box[3] - box[1]
     ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2))   
 
-image = cv2.imread(IMAGE_PATH)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+def transfer_image(image, save_path):
+    torch.backends.cudnn.enabled = False
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
-plt.figure(figsize=(10,10))
-plt.imshow(image)
-plt.axis('on')
-plt.show()
+    # IMAGE_PATH = "samples/inputs/shield.jpg"
+    sam_checkpoint = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam_vit_l_0b3195.pth")
+    model_type = "vit_l"
 
-device = "cpu"
+    # image = cv2.imread(IMAGE_PATH)
+    import cv2
+    img = image
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-sam.to(device=device)
+    # plt.figure(figsize=(10,10))
+    # plt.imshow(image)
+    # plt.axis('on')
+    # plt.show()
 
-predictor = SamPredictor(sam)
+    device = "cpu"
 
-predictor.set_image(image)
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam.to(device=device)
 
-input_point = np.array([[1260, 600]])
-# input_point = np.array([[960, 600]])
-# input_point = np.array([[660, 600]])
-input_label = np.array([1])
+    predictor = SamPredictor(sam)
 
-masks, scores, logits = predictor.predict(
-    point_coords=input_point,
-    point_labels=input_label,
-    multimask_output=True,
-)
+    predictor.set_image(image)
 
-mask = masks[2]
-plt.figure(figsize=(10,10))
-plt.imshow(image)
-show_mask(mask, plt.gca())
-show_points(input_point, input_label, plt.gca())
-plt.axis('off')
-plt.show()
+    # input_point = np.array([[1260, 600]])
+    input_point = np.array([[800, 450]])
+    # input_point = np.array([[660, 600]])
+    input_label = np.array([1])
 
-mask = mask.astype(np.uint8)
-mask[mask==1] = 255
+    masks, scores, logits = predictor.predict(
+        point_coords=input_point,
+        point_labels=input_label,
+        multimask_output=True,
+    )
 
-import cv2
+    mask = masks[2]
+    # plt.figure(figsize=(10,10))
+    # plt.imshow(image)
+    # show_mask(mask, plt.gca())
+    # show_points(input_point, input_label, plt.gca())
+    # plt.axis('off')
+    # plt.show()
 
-img = cv2.imread(IMAGE_PATH)
+    mask = mask.astype(np.uint8)
+    mask[mask==1] = 255
 
-img1gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # import cv2
 
-mask_inv = cv2.bitwise_not(mask)
+    # img = cv2.imread(IMAGE_PATH)
 
-img_fg = cv2.bitwise_and(img, img, mask=mask)
+    mask_inv = cv2.bitwise_not(mask)
 
-cv2.imshow('sam result', img_fg)
+    # img_fg = cv2.bitwise_and(img, img, mask=mask)
 
-cv2.waitKey(0)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--checkpoint',
+        type=str,
+        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), './weights/celeba_distill.pt'),
+    )
+    parser.add_argument(
+        '--input_dir', 
+        type=str, 
+        default='./samples/inputs',
+    )
+    parser.add_argument(
+        '--output_dir', 
+        type=str, 
+        default='./samples/results',
+    )
+    parser.add_argument(
+        '--device',
+        type=str,
+        default='cpu',
+    )
+    parser.add_argument(
+        '--upsample_align',
+        type=bool,
+        default=False,
+        help="Align corners in decoder upsampling layers"
+    )
+    parser.add_argument(
+        '--x32',
+        action="store_true",
+        help="Resize images to multiple of 32"
+    )
+    args = parser.parse_args()
 
-cv2.destroyAllWindows()
+    img_fga = test(args, image)
+    img_fga = cv2.cvtColor(np.asarray(img_fga),cv2.COLOR_RGB2BGR) 
+    img_fga = cv2.resize(img_fga, (mask.shape[1], mask.shape[0]), interpolation=cv2.INTER_CUBIC)
+    # import pdb; pdb.set_trace()
+    img_fga = cv2.bitwise_and(img_fga, img_fga, mask=mask)
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--checkpoint',
-    type=str,
-    default='./weights/celeba_distill.pt',
-)
-parser.add_argument(
-    '--input_dir', 
-    type=str, 
-    default='./samples/inputs',
-)
-parser.add_argument(
-    '--output_dir', 
-    type=str, 
-    default='./samples/results',
-)
-parser.add_argument(
-    '--device',
-    type=str,
-    default='cpu',
-)
-parser.add_argument(
-    '--upsample_align',
-    type=bool,
-    default=False,
-    help="Align corners in decoder upsampling layers"
-)
-parser.add_argument(
-    '--x32',
-    action="store_true",
-    help="Resize images to multiple of 32"
-)
-args = parser.parse_args()
+    img_bg = cv2.bitwise_and(img, img, mask=mask_inv)
 
-img_fga = test(args, image)
-img_fga = cv2.cvtColor(np.asarray(img_fga),cv2.COLOR_RGB2BGR) 
-img_fga = cv2.bitwise_and(img_fga, img_fga, mask=mask)
+    res = cv2.add(img_fga, img_bg)
 
-img_bg = cv2.bitwise_and(img, img, mask=mask_inv)
+    # cv2.imshow('result', res)
 
-res = cv2.add(img_fga, img_bg)
+    cv2.imwrite("../flask-test/static/images/" + 'res.jpg', res)
 
-cv2.imshow('result', res)
+    # cv2.waitKey(0)
 
-cv2.imwrite("samples/results/" + IMAGE_PATH.split("/")[-1], res)
-
-cv2.waitKey(0)
-
-cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
