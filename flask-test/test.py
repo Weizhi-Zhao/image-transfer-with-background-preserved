@@ -5,6 +5,7 @@ import cv2
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../animegan2-pytorch'))
 import test_withsam
+import json
 app = Flask(__name__)
 
 app.config['UPLOADED_PHOTO_DEST'] = os.path.join(os.getcwd(), 'photos') # 当前工作目录
@@ -15,7 +16,7 @@ app.config['UPLOADED_PHOTO_ALLOW'] = IMAGES
 photos = UploadSet('PHOTO', IMAGES) # 大概是给上传的文件分类，然后限制上传文件类型
 configure_uploads(app, photos) # 大概是初始化一下
 
-@app.route('/upload', methods=['POST', 'GET'])
+@app.route('/', methods=['POST', 'GET'])
 def upload():
     # TODO 这段程序具体还没搞懂
     if request.method == 'POST' and 'photo' in request.files:
@@ -27,18 +28,35 @@ def upload():
 def show(name):
     if name is None:
         abort(404)
+    url = photos.url(name)
+    selfUrl = request.url
+    return render_template('show.html', url=url, name=name, selfUrl = selfUrl)
+
+@app.route('/result/<name>/<x>/<y>')
+def showRes(name, x, y):
+    if name is None:
+        abort(404)
     url = photos.url(name) # 对photos这个set调用.url()方法，即可获取文件（具体的不懂）
     img = cv2.imread(os.path.join('photos', name), cv2.IMREAD_COLOR)
-    test_withsam.transfer_image(img, '')
-    # cv2.imshow('result', img)
+    height, width, _ = img.shape
+    x = eval(x)
+    y = eval(y)
+    x = x - 8
+    y = y - 8
+    y = y / 700 * height
+    x = x / 700 * height
+    if x > width or y > height:
+        return redirect(url_for('show', name=name))
+    # cv2.imshow('img', img)
     # cv2.waitKey(0)
-    return render_template('show.html', url=url, name=name)
+    test_withsam.transfer_image(img, x, y)
+    return render_template('showRes.html', url=url, name=name, x = x, y = y)
 
 
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+# @app.route('/')
+# def hello_world():
+#     return 'Hello, World!'
 
 
 @app.route("/hello")

@@ -1,3 +1,36 @@
-<!doctype html>
-<!-- <img src={{ url }} height="800"> -->
-<img src="{{url_for('static', filename='images/res.jpg')}}" alt="test img" height="800">
+<html>
+    <head><title> Button Click </title></head>
+    <body>
+        <!-- <img src="{{url_for('static', filename='images/res.jpg')}}" alt="test img" height="800"> -->
+        <img src="{{url}}" alt="test img" height="700">
+        <script type="text/javascript">
+            function printMousePos(event) {
+                document.getElementById("p").textContent =
+                "clientX: " + event.clientX +
+                " - clientY: " + event.clientY;
+                var x = String(event.clientX);
+                var y = String(event.clientY);
+                // alert(x);
+                // alert(y);
+                // alert("{{url_for('showRes', name=name, x='holdX', y='holdY')}}".replace('holdX', x).replace('holdY', y));
+                window.location = "{{url_for('showRes', name=name, x='holdX', y='holdY')}}".replace('holdX', x).replace('holdY', y);
+
+                // $.ajax({
+                //     url:'http://127.0.0.1:5000/photo/jms.jpg',
+                //     type : 'post',
+                //     dataType:'json',
+                //     headers: {
+                //     "Content-Type": "application/json;charset=utf-8"
+                //     },
+                //     contentType:'application/json; charset=utf-8',
+                //     data:JSON.stringify({x:x, y:y}),
+                //     success:function(data){
+                //         console.log(data);
+                //     }
+                // })
+            }
+            document.addEventListener("click", printMousePos);
+        </script>
+        <p id="p"></p>
+    </body>
+</html>

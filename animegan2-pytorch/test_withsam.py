@@ -63,7 +63,7 @@ def show_box(box, ax):
     w, h = box[2] - box[0], box[3] - box[1]
     ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2))   
 
-def transfer_image(image, save_path):
+def transfer_image(image, x, y):
     torch.backends.cudnn.enabled = False
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
@@ -92,7 +92,8 @@ def transfer_image(image, save_path):
     predictor.set_image(image)
 
     # input_point = np.array([[1260, 600]])
-    input_point = np.array([[800, 450]])
+    input_point = np.array([[x, y]])
+    print("point ok")
     # input_point = np.array([[660, 600]])
     input_label = np.array([1])
 
