@@ -15,17 +15,17 @@
 
 3. 点击终端中的网址，即可运行网页
 
-![image-20230807111755361](flask-test\demo\run2.png)
+![image-20230807111755361](flask-test/demo/run2.png)
 
 4. 点击选择文件，选择一张图片，并点击上传
 
-![image-20230807112031468](flask-test\demo\kun.png)
+![image-20230807112031468](flask-test/demo/kun.png)
 
 5. 用鼠标点击你要选择的物体，物体的任意部分均可（只用点击一下，这一步没有明显的提示反馈）
 
 6. 等待**2分钟**左右，此时网页上会显示**加载**动画
 
-![kun](flask-test\demo\kun2.png)
+![kun](flask-test/demo/kun2.png)
 
 7. 最终，网页会显示风格迁移后的结果
 
