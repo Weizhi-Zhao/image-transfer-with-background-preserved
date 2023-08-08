@@ -80,7 +80,8 @@ def del_files(dir_path):
 
 if __name__ == '__main__':
     # import pdb; pdb.set_trace()
+    del_files('photos')
     server = pywsgi.WSGIServer(('0.0.0.0',80),app)
     server.serve_forever()
-    del_files('photos')
-    app.run()
+    # del_files('photos')
+    # app.run()
