@@ -1,5 +1,6 @@
 from flask import Flask, request, redirect, render_template, url_for, abort
 from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
+from gevent import pywsgi
 import os
 import cv2
 import sys
@@ -79,5 +80,7 @@ def del_files(dir_path):
 
 if __name__ == '__main__':
     # import pdb; pdb.set_trace()
+    server = pywsgi.WSGIServer(('0.0.0.0',80),app)
+    server.serve_forever()
     del_files('photos')
     app.run()
