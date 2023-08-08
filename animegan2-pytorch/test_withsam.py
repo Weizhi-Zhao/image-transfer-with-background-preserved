@@ -169,6 +169,7 @@ def transfer_image(image, x, y):
     # cv2.imshow('result', res)
 
     cv2.imwrite("../flask-test/static/images/" + 'res.jpg', res)
+    
 
     # cv2.waitKey(0)
 

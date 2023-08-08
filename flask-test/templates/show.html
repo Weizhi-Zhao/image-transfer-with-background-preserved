@@ -1,8 +1,26 @@
 <html>
-    <head><title> Button Click </title></head>
+    <head>
+        <title> Button Click </title>
+        <style>
+            div{
+                padding: 0;
+                margin: 0;
+            }
+            .pp1{
+                height: 90vh;
+                width: 90vh;
+                background-image:url("{{url}}");
+	            background-repeat:no-repeat;
+                background-size:100% 100%;
+            }
+        </style>
+        <meta content="text/html" charset="UTF-8">
+    </head>
     <body>
         <!-- <img src="{{url_for('static', filename='images/res.jpg')}}" alt="test img" height="800"> -->
-        <img src="{{url}}" alt="test img" height="700">
+        <!-- <img src="{{url}}" alt="test img" height="700" > -->
+        <div class="pp1">
+        </div>
         <script type="text/javascript">
             function printMousePos(event) {
                 document.getElementById("p").textContent =
@@ -10,24 +28,11 @@
                 " - clientY: " + event.clientY;
                 var x = String(event.clientX);
                 var y = String(event.clientY);
+                var width = String(window.innerWidth)
                 // alert(x);
                 // alert(y);
                 // alert("{{url_for('showRes', name=name, x='holdX', y='holdY')}}".replace('holdX', x).replace('holdY', y));
-                window.location = "{{url_for('showRes', name=name, x='holdX', y='holdY')}}".replace('holdX', x).replace('holdY', y);
-
-                // $.ajax({
-                //     url:'http://127.0.0.1:5000/photo/jms.jpg',
-                //     type : 'post',
-                //     dataType:'json',
-                //     headers: {
-                //     "Content-Type": "application/json;charset=utf-8"
-                //     },
-                //     contentType:'application/json; charset=utf-8',
-                //     data:JSON.stringify({x:x, y:y}),
-                //     success:function(data){
-                //         console.log(data);
-                //     }
-                // })
+                window.location = "{{url_for('showRes', name=name, x='holdX', y='holdY', width='holdWidth')}}".replace('holdX', x).replace('holdY', y).replace('holdWidth', width);
             }
             document.addEventListener("click", printMousePos);
         </script>

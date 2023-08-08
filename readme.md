@@ -1,12 +1,76 @@
 # 保留背景的图像风格迁移
 
-# 可以用鼠标选则物体的网站
+## 8.8更新
+
+### 新运行方法
+
+1. 运行python文件方法与之前一样
+  [跳转](#run_method)
+
+2. 进入网站第一个界面是这个，选择需要风格迁移的图片，点击确定
+
+    左边的几个按钮都没用
+
+	![work1](flask-test/demo/work1.png)
+3. 点击确定之后进入第二个界面，在这里面选点，点一下之后会显示坐标。如果选择的点在图片范围之内，python的终端内会提示"选点成功"
+
+	![work2](flask-test/demo/work2.png)
+
+4. 选点成功之后等待一到两分钟，会进入新的界面，在这个界面里面会显示原图和风格迁移之后的图片
+
+	![work3](flask-test/demo/work3.png)
+
+### 关于代码
+
+这次的代码**缝合**了前端和后端的代码，很多地方显得拧巴我也没办法。以后有机会再改进吧。
+
+#### `test.py`
+- 把upload换成了UL
+- 把show换成了mouse
+- 把showRes换成了showEffRes
+	- 原代码里通过网页传入了鼠标点击的坐标x, y,现在有新加了图片左上角的坐标ex, ey。
+		```py
+		@app.route('/result/<name>/<x>/<y>/<ex>/<ey>')
+		def showEffRes(name, x, y, ex, ey):
+		```
+	- 通过对鼠标点击的位置和网页图片的左上角位置进行计算，得出鼠标点击位置在图片上的相对位置。
+		```py
+		y = (y - ey) / 350 * height
+		x = (x - ex) / 350 * height
+		```
+	- 将这个点传给`transfer_image`函数。
+
+#### `UL.html`
+这个基本上就是`new2.html`换了个名直接放上去了
+
+值得注意的是，连接到css文件时
+- css文件需要放在`flask-test/static/css文件夹下`
+- 对应的文件地址也需要修改，代码应改为
+```html
+	<link rel="stylesheet" href="../static/css/styles.css">
+```
+
+#### `mouse.html`
+新增了函数`getElementViewPosition(element)`，用于计算元素的左上角关于网页左上角的相对坐标，在`printMousePos`里面调用
+```javascript
+	var elemen = getElementViewPosition(document.getElementById("image-preview"));
+	var ex = String(elemen.x);
+	var ey = String(elemen.y);
+```
+
+#### `showEffRes`
+这个页面写得十分丑陋，因为一些奇怪的原因，这个网页无法正常链接到css文件，现在依然没有解决这个问题。无奈之下只能把css文件里的内容放到了html文件的页首
+
+![ugly](flask-test/demo/ugly.png)
+
+我也不想有这两百多行的style......
+## 可以用鼠标选则物体的网站
 
 好了，现在代码又更新了（2023.8.7），要跑原来的代码请回退到之前的版本
 
 如果你由于网络问题不能安装SAM，可以试试`pip install git+https://gitee.com/mirrors/segment-anything.git`国内镜像
 
-## 运行方法
+### <div id="run_method">运行方法</div>
 
 1. 进入flask-test文件夹
 2. 运行`python test.py`
@@ -31,13 +95,13 @@
 
 ![kun cute](flask-test/demo/kun3.png)
 
-## 关于代码
+### 关于代码
 其实我也有很多代码不太懂，我尽力写。有很多代码是测试时的遗迹，有的文件也没什么用。
 
-### `test_withsam`
+#### `test_withsam`
 这部分代码是关于AnimeGANv2 + SAM的，在之前的版本中已经运行成功了，我们只要假设它是一个封装好的包，只要传入cv2.imread()读入的图片，和提示点（鼠标选择点）的坐标，就可以将物体风格迁移后的图片存入`static/images/res.jpg`中
 
-### `test.py`
+#### `test.py`
 **html和python代码之间靠`render_template()`函数链接，具体细节也不太清楚**
 - `upload()`为上传文件的网页
 - `show()`为显示图片，并用鼠标选择物体的网页
@@ -54,14 +118,14 @@
   - 如果点击位置不在图片上，则跳转回`show`网页重新点击
   - 最后，调用`test_withsam.transfer_image(img, x, y)`将风格迁移
 
-### `/templates/show.html`
+#### `/templates/show.html`
 - `<script type="text/javascript">`: 这段代码的作用是，当鼠标点击时，读取鼠标坐标，并将网页跳转到显示结果的网页。那些注释都是失败的尝试呜呜呜
 - `window.location`是用于用于跳转网页的代码
 - 在跳转网页过程中，鼠标点击坐标这一参数要通过网址的形式传参，虽然我也觉得用网址传参很蠢，但是我也不会别的写法了。
 - `"{{url_for('showRes', name=name, x='holdX', y='holdY')}}"`这是一个叫做`url_for`的函数，用于生成网址。由于在字符串中，所以函数外要加上双层大括号
 - `.replace('holdX', x).replace('holdY', y)`不知为何，javascript中的变量不能直接作为参数传入`url_for`函数，需要先借用字符串常量'holdX'，'holdY'生成网址，再将x,y的值替换入网址中（x和y已经被转换为字符串）
 
-### `/templates/showRes.html`
+#### `/templates/showRes.html`
 我发现，图片必须放在static文件夹下，才能被显示出来。虽然这个代码很蠢，但是我也没办法改进了。
 因此`test_withsam.transfer_image(img, x, y)`函数只能将图片保存在`static/images/res.jpg`中，最后由该网页显示
 ## AnimeGANv2 + SAM 运行方法
