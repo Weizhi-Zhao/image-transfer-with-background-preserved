@@ -7,7 +7,6 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../animegan2-pytorch'))
 import test_withsam
-import json
 
 app = Flask(__name__)
 

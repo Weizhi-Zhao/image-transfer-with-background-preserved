@@ -69,8 +69,8 @@ def transfer_image(image, x, y):
     torch.backends.cudnn.deterministic = True
 
     # IMAGE_PATH = "samples/inputs/shield.jpg"
-    sam_checkpoint = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam_vit_l_0b3195.pth")
-    model_type = "vit_l"
+    sam_checkpoint = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam_vit_b_01ec64.pth")
+    model_type = "vit_b"
 
     # image = cv2.imread(IMAGE_PATH)
     import cv2
