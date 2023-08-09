@@ -8,7 +8,8 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '../animegan2-pytorch'))
 import test_withsam
 
-url = 'http://127.0.0.1:5000/img'
+# url = 'http://8.130.91.10:5000/img'
+url = 'http://127.0.0.1:5000'
 
 oldImgRes = requests.get(url)
 
@@ -20,12 +21,13 @@ def send():
         'filename': 'res.jpg',
         'imgData': imgData
     }
-    ret = requests.request('post', 'http://127.0.0.1:5000/returnimg', data=data)
+    ret = requests.request('post', url + '/returnimg', data=data)
     print(ret)
 
 while True:
     try:
-        res = requests.get(url)
+        res = requests.get(url + '/img')
+        print('ok')
     except:
         continue
 
@@ -35,16 +37,16 @@ while True:
 
     if res != oldImgRes:
         oldImgRes = res
-        f = open('img/receive.npy', 'wb')
-        # import pdb; pdb.set_trace()
-        f.write(res.content)
-        f.close()
+        with open('img/receive.npy', 'wb') as f:
+            f.write(res.content)
         img_xy = np.load('img/receive.npy', allow_pickle=True)
         print('{}    {}',img_xy.item()['x'], img_xy.item()['y'])
 
-        # cv2.imshow("lalala", img_xy.item()['img'])
+        with open('img/receive.jpg', 'wb') as f:
+            f.write(img_xy.item()['img'])
+        img = cv2.imread('img/receive.jpg')
 
-        test_withsam.transfer_image(img_xy.item()['img'], img_xy.item()['x'], img_xy.item()['y'])
+        test_withsam.transfer_image(img, img_xy.item()['x'], img_xy.item()['y'])
 
         send()
         # break

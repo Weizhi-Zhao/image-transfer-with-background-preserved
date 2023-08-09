@@ -20,7 +20,7 @@ app.static_folder = 'static'
 
 photos = UploadSet('PHOTO', IMAGES)  # 大概是给上传的文件分类，然后限制上传文件类型
 configure_uploads(app, photos)  # 大概是初始化一下
-haveSent = False
+haveSent = True
 
 @app.route('/', methods=['POST', 'GET'])
 def UL():
@@ -57,10 +57,13 @@ def showEffRes(name, x, y, ex, ey):
     if x > width or x < 0 or y > height or y < 0:
         return redirect(url_for('mouse', name=name))
     print("选点成功")
+
+    with open(os.path.join('photos', name), 'rb') as f:
+        ori_img = f.read()
     img_xy_dict = {
         'x': x,
         'y': y,
-        'img': img
+        'img': ori_img
     }
     try:    
         os.remove('static/images/res.jpg')
