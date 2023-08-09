@@ -10,6 +10,7 @@ import torch
 import matplotlib.pyplot as plt
 import cv2
 from segment_anything import sam_model_registry, SamPredictor
+import gc
 
 
 def load_image(image_path, x32=False):
@@ -102,6 +103,8 @@ def transfer_image(image, x, y):
         point_labels=input_label,
         multimask_output=True,
     )
+
+    gc.collect()
 
     mask = masks[2]
     # plt.figure(figsize=(10,10))
