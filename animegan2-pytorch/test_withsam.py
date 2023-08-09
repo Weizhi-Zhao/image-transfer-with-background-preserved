@@ -70,8 +70,8 @@ def transfer_image(image, x, y):
     torch.backends.cudnn.deterministic = True
 
     # IMAGE_PATH = "samples/inputs/shield.jpg"
-    sam_checkpoint = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam_vit_b_01ec64.pth")
-    model_type = "vit_b"
+    sam_checkpoint = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam_vit_l_0b3195.pth")
+    model_type = "vit_l"
 
     # image = cv2.imread(IMAGE_PATH)
     import cv2
@@ -93,7 +93,7 @@ def transfer_image(image, x, y):
     predictor.set_image(image)
 
     # input_point = np.array([[1260, 600]])
-    input_point = np.array([[x, y]])
+    input_point = np.array([[round(x), round(y)]])
     print("point ok")
     # input_point = np.array([[660, 600]])
     input_label = np.array([1])
@@ -103,8 +103,6 @@ def transfer_image(image, x, y):
         point_labels=input_label,
         multimask_output=True,
     )
-
-    gc.collect()
 
     mask = masks[2]
     # plt.figure(figsize=(10,10))
@@ -170,10 +168,7 @@ def transfer_image(image, x, y):
     res = cv2.add(img_fga, img_bg)
 
     # cv2.imshow('result', res)
-
-    cv2.imwrite("../flask-test/static/images/" + 'res.jpg', res)
-    
-
     # cv2.waitKey(0)
-
     # cv2.destroyAllWindows()
+
+    cv2.imwrite("../local-processer/result/" + 'res.jpg', res)
