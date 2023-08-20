@@ -39,8 +39,9 @@ def mouse(name):
     return render_template('mouse.html', url=url, name=name, selfUrl=selfUrl)
 
 
-@app.route('/result/<name>/<x>/<y>/<ex>/<ey>')
-def showEffRes(name, x, y, ex, ey):
+@app.route('/result/<name>/<x>/<y>/<ex>/<ey>/<rh>')
+def showEffRes(name, x, y, ex, ey, rh):
+    #rh : render height
     if name is None:
         abort(404)
     url = photos.url(name)  # 对photos这个set调用.url()方法，即可获取文件（具体的不懂）
@@ -50,8 +51,9 @@ def showEffRes(name, x, y, ex, ey):
     y = eval(y)
     ex = eval(ex)
     ey = eval(ey)
-    y = (y - ey) / 350 * height
-    x = (x - ex) / 350 * height
+    rh = eval(rh)
+    y = (y - ey) / rh * height
+    x = (x - ex) / rh * height
     if x > width or x < 0 or y > height or y < 0:
         return redirect(url_for('mouse', name=name))
     # cv2.imshow('img', img)
